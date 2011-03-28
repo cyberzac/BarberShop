@@ -18,12 +18,12 @@ class BarberSpec extends Specification with TestKit {
     }
 
     doAfter {
-      barber.stop
+      barber stop
     }
 
     "When sleeping, respond with cutDone and a NextCustomer message after a WakeUp" in {
       var messages = List[String]()
-      within(800 millis) {
+      within(900 millis) {
         barber ! WakeUp
         receiveWhile(700 millis) {
           case CutDone(time) => messages = "cutdone" :: messages

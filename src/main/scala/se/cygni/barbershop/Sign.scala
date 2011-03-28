@@ -2,6 +2,7 @@ package se.cygni.barbershop
 
 import akka.actor.{ActorRef, Actor}
 import collection.immutable.Queue
+
 class Sign extends Actor {
 
   protected def receive = signReceive(Queue[ActorRef]())

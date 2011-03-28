@@ -12,6 +12,10 @@ class ChairsSpec extends Specification with TestKit {
 
       val chairs = actorOf(new Chairs(2)).start
 
+    doAfter {
+      chairs stop
+    }
+
     "Reply with a TakeASeat message if there are seats available" in {
       within(100 millis) {
         chairs ! IsSeatAvailable
@@ -33,8 +37,6 @@ class ChairsSpec extends Specification with TestKit {
         chairs ! NextCustomer
         expectMsg(NoCustomersWaiting)
       }
-
-
     }
 
 

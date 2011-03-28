@@ -11,9 +11,14 @@ class SignSpec extends Specification with TestKit {
   val sign = actorOf[Sign].start
 
   "The sign" should {
+    doAfter {
+      sign stop
+    }
+
+    val duration = 100 millis
 
     "Replay with a Wait message on a Wakeup message  if there are no sleeping barbers" in {
-      within(100 millis) {
+      within(duration) {
         sign ! WakeUp
         expectMsg(Wait)
       }
@@ -33,7 +38,7 @@ class SignSpec extends Specification with TestKit {
         sign ! WakeUp
         expectMsg(WakeUp)
       }
-      within(100 millis) {
+      within(duration) {
         sign ! WakeUp  // No free barbers
         expectMsg(Wait)
       }
