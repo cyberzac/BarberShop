@@ -4,13 +4,15 @@ import akka.util.TestKit
 import akka.util.duration._
 import akka.actor.Actor._
 import org.specs.Specification
+import akka.actor.Actor
 
 
-class ChairsSpec extends Specification with TestKit {
+class ChairsSpec extends Specification with TestKit with TestStubs {
 
   "The chairs" should {
 
       val chairs = actorOf(new Chairs(2)).start
+      val barber = new Stub
 
     doAfter {
       chairs stop
@@ -39,11 +41,14 @@ class ChairsSpec extends Specification with TestKit {
       }
     }
 
-  "Tell the first customer in line to go the the barber sending a GotoBarber message" in {
+  "Tell the first customer in line to go the the barber sending a NextCustomer with a GotoBarber message" in {
+    object  barber extends Stub {
+      def sendNextCustomer = chairs ! NextCustomer
+    }
     within(500 millis) {
       chairs ! IsSeatAvailable
-      chairs ! NextCustomer
-      expectMsgAllOf(TakeASeat, GotoBarber(testActor))
+      barber.sendNextCustomer
+      expectMsgAllOf(TakeASeat, GotoBarber(barber.ref))
     }
   }
 

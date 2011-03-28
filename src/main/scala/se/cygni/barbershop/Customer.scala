@@ -2,19 +2,18 @@ package se.cygni.barbershop
 
 import akka.actor.{ActorRef, Actor}
 
-case class Customer(sign: ActorRef, chairs: ActorRef, door: ActorRef) extends Actor {
-
+case class Customer(barbershop: Barbershop) extends Actor {
 
   override def preStart = {
-    sign ! WakeUp
+    barbershop.sign ! WakeUp
   }
 
   protected def receive = {
     case CutDone(time) => {
       log.info("Cut in %d, leaving", time)
-      door ! Leaving
+      barbershop.door ! Leaving
     }
-    case Wait => chairs ! IsSeatAvailable
+    case Wait => barbershop.chairs ! IsSeatAvailable
     case TakeASeat => log.info("sitting down")
     case NoSeatsAvailable => log.info("Standing in line")
     case msg => log.error("Unknown message %s", msg)

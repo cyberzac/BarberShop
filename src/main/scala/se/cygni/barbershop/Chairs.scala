@@ -3,7 +3,7 @@ package se.cygni.barbershop
 import collection.immutable.Queue
 import akka.actor.{ActorRef, Actor}
 
-class Chairs(numberOfChairs: Int) extends Actor {
+case class Chairs(numberOfChairs: Int) extends Actor {
 
   protected def receive = chairsReceive(Queue[ActorRef]())
 
@@ -21,8 +21,8 @@ class Chairs(numberOfChairs: Int) extends Actor {
     case NextCustomer =>if (takenChairs.isEmpty) {
       self.reply(NoCustomersWaiting)
     } else {
-      val (barber, tail) = takenChairs.dequeue
-      self.reply(GotoBarber(barber))
+      val (customer, tail) = takenChairs.dequeue
+      customer ! GotoBarber(self.sender.get)
       become(chairsReceive(tail))
     }
     case msg => log.error("Unknown message: %s", msg)
