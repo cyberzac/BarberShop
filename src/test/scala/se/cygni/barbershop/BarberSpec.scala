@@ -21,7 +21,7 @@ class BarberSpec extends Specification with TestKit {
       barber stop
     }
 
-    "When sleeping, respond with cutDone and a NextCustomer message after a WakeUp" in {
+    "Respond with CutDone and a NextCustomer message after a WakeUp" in {
       var messages = List[String]()
       within(900 millis) {
         barber ! WakeUp
@@ -33,8 +33,7 @@ class BarberSpec extends Specification with TestKit {
       }
     }
 
-    "When working go to sleep on a NoCustomersWaiting message" in {
-      var messages = List[String]()
+    "Respond with a StartSleeping on a NoCustomersWaiting message" in {
       within(800 millis) {
         barber ! WakeUp
         ignoreMsg {
@@ -43,6 +42,18 @@ class BarberSpec extends Specification with TestKit {
         }
         barber ! NoCustomersWaiting
         expectMsg(StartSleeping)
+      }
+    }
+
+    "Respond with a CutDone and NextCustomer on a  CutMe message" in {
+      var messages = List[String]()
+      within(900 millis) {
+        barber ! CutMe
+        receiveWhile(700 millis) {
+          case CutDone(time) => messages = "cutdone" :: messages
+          case NextCustomer => messages = "next" :: messages
+        }
+        messages.reverse  must_==  (List("cutdone", "next")) // Reverse since we prepend messages
       }
     }
   }

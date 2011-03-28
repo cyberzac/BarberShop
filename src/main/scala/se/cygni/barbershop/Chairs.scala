@@ -18,7 +18,13 @@ class Chairs(numberOfChairs: Int) extends Actor {
         self.reply(NoSeatsAvailable)
       }
     }
-    case NextCustomer => self.reply(NoCustomersWaiting)
+    case NextCustomer =>if (takenChairs.isEmpty) {
+      self.reply(NoCustomersWaiting)
+    } else {
+      val (barber, tail) = takenChairs.dequeue
+      self.reply(GotoBarber(barber))
+      become(chairsReceive(tail))
+    }
     case msg => log.error("Unknown message: %s", msg)
   }
 }

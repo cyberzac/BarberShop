@@ -1,5 +1,7 @@
 package se.cygni.barbershop
 
+import akka.actor.ActorRef
+
 /**
  * Request for a barber
  */
@@ -52,6 +54,15 @@ case object NoCustomersWaiting
  */
 case object Leaving
 
+/**
+ * A custmer want to be cut
+ */
+case object CutMe
+
+/**
+ * Goto the specified barber
+ */
+case class GotoBarber(barber:ActorRef)
 
 
 

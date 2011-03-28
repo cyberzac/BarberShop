@@ -7,7 +7,7 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
 
   override def preStart = {
     log.info("%s came to work", name)
-    gotoSleep
+    startSleeping
   }
 
 
@@ -15,33 +15,25 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
     log.info("%s going home", name)
   }
 
-  private def gotoSleep = {
+  private def startSleeping = {
     log.info("%s going to sleep", name)
     sign ! StartSleeping
-    become(sleeping)
   }
 
-
-  protected def receive = sleeping
 
   def unknownMessage(unknown: Any): Unit = {
     log.warn("unknown message %s", unknown)
   }
 
-  val sleeping: Receive = {
-    case WakeUp => cut()
-    case m => unknownMessage(m)
-  }
-
-  val working: Receive = {
-    case WakeUp => log.info("Ignoring WakeUp")
-    case NoCustomersWaiting => gotoSleep
-    case m => unknownMessage(m)
+   protected def receive = {
+      case WakeUp => cut()
+      case CutMe => cut()
+      case NoCustomersWaiting => startSleeping
+      case m => unknownMessage(m)
   }
 
   def cut(): Unit = {
     log.info("Cutting")
-    become(working)
     val time = cutTime
     Thread.sleep(time)
     log.info("cutted in %d", time)
@@ -52,7 +44,6 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
   def cutTime: Long = {
     val maxCutTime = 600
     val minCutTime = 300
-
     minCutTime + (random * (maxCutTime - minCutTime)).intValue
   }
 

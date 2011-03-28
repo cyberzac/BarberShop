@@ -39,6 +39,14 @@ class ChairsSpec extends Specification with TestKit {
       }
     }
 
+  "Tell the first customer in line to go the the barber sending a GotoBarber message" in {
+    within(500 millis) {
+      chairs ! IsSeatAvailable
+      chairs ! NextCustomer
+      expectMsgAllOf(TakeASeat, GotoBarber(testActor))
+    }
+  }
+
 
 
   }
