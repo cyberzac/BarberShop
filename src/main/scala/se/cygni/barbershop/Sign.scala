@@ -7,7 +7,7 @@ class Sign extends Actor {
   protected def receive = signReceive(Queue[ActorRef]())
 
   def signReceive(freeBarbers: Queue[ActorRef]): Receive = {
-    case Sleeping => {
+    case StartSleeping => {
       if (self.sender.isDefined) {}
       become(signReceive(freeBarbers enqueue self.sender.get))
     }

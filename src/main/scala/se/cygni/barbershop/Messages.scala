@@ -15,7 +15,7 @@ package se.cygni.barbershop
  * Barber is sleeping
  * @param time, when started sleeping
  */
-  case object Sleeping
+  case object StartSleeping
 
 /**
  * No barbers free please wait
@@ -25,7 +25,27 @@ case object Wait
 /**
  * Barber wants the next waiting customer
  */
-case object Next
+case object NextCustomer
+
+/**
+ * Is there a free chair?
+ */
+case object IsSeatAvailable
+
+/**
+ * Take a seat in the waiting room
+ */
+case object TakeASeat
+
+/**
+ * There are no free chairs
+ */
+case object NoSeatsAvailable
+
+/**
+ * There are no waiting customers
+ */
+case object NoCustomersWaiting
 
 
 

@@ -13,25 +13,37 @@ class BarberSpec extends Specification with TestKit {
     val barber = actorOf(new Barber("Edward", sign = testActor, chairs= testActor)).start
 
     doBefore {
-      // A barber always send a Sleeping messages when started
-      expectMsg(100 millis, Sleeping)
+      // A barber always send a StartSleeping messages when started
+      expectMsg(100 millis, StartSleeping)
     }
 
     doAfter {
       barber.stop
     }
 
-    "When sleeping, respond with cutDone and a Next message after a WakeUp" in {
+    "When sleeping, respond with cutDone and a NextCustomer message after a WakeUp" in {
       var messages = List[String]()
       within(800 millis) {
         barber ! WakeUp
         receiveWhile(700 millis) {
           case CutDone(time) => messages = "cutdone" :: messages
-          case Next => messages = "next" :: messages
+          case NextCustomer => messages = "next" :: messages
         }
-        messages  must_==  (List("next", "cutdone")) // Reverse since we prepend messages
+        messages.reverse  must_==  (List("cutdone", "next")) // Reverse since we prepend messages
       }
     }
 
+    "When working go to sleep on a NoCustomersWaiting message" in {
+      var messages = List[String]()
+      within(800 millis) {
+        barber ! WakeUp
+        ignoreMsg {
+          case CutDone(time) => true
+          case NextCustomer =>true
+        }
+        barber ! NoCustomersWaiting
+        expectMsg(StartSleeping)
+      }
+    }
   }
 }

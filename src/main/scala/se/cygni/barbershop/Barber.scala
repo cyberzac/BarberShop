@@ -3,11 +3,11 @@ package se.cygni.barbershop
 import scala.math.random
 import akka.actor.{ActorRef, Actor}
 
-case class Barber(name:String, sign:ActorRef, chairs: ActorRef) extends Actor {
+case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor {
 
   override def preStart = {
     log.info("%s came to work", name)
-    sign ! Sleeping
+    gotoSleep
   }
 
 
@@ -15,11 +15,18 @@ case class Barber(name:String, sign:ActorRef, chairs: ActorRef) extends Actor {
     log.info("%s going home", name)
   }
 
+  private def gotoSleep = {
+    log.info("%s going to sleep", name)
+    sign ! StartSleeping
+    become(sleeping)
+  }
+
+
   protected def receive = sleeping
 
-    def unknownMessage(unknown: Any): Unit = {
-      log.warn("unknown message %s", unknown)
-    }
+  def unknownMessage(unknown: Any): Unit = {
+    log.warn("unknown message %s", unknown)
+  }
 
   val sleeping: Receive = {
     case WakeUp => cut()
@@ -28,6 +35,7 @@ case class Barber(name:String, sign:ActorRef, chairs: ActorRef) extends Actor {
 
   val working: Receive = {
     case WakeUp => log.info("Ignoring WakeUp")
+    case NoCustomersWaiting => gotoSleep
     case m => unknownMessage(m)
   }
 
@@ -38,14 +46,14 @@ case class Barber(name:String, sign:ActorRef, chairs: ActorRef) extends Actor {
     Thread.sleep(time)
     log.info("cutted in %d", time)
     self.reply(CutDone(time))
-    chairs ! Next
+    chairs ! NextCustomer
   }
 
   def cutTime: Long = {
     val maxCutTime = 600
-     val minCutTime = 300
+    val minCutTime = 300
 
-    minCutTime + (random * (maxCutTime-minCutTime)).intValue
+    minCutTime + (random * (maxCutTime - minCutTime)).intValue
   }
 
 }
