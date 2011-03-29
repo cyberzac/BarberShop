@@ -44,9 +44,9 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
       }
     }
 
-    "Sit down and wait if receiving a TakeASeat message" in {
+    "Sit down and wait if receiving a TakeSeat message" in {
       within(duration) {
-        customer ! TakeASeat
+        customer ! TakeSeat
         expectNoMsg
       }
     }

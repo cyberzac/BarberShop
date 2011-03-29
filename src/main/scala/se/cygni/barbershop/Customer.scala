@@ -14,7 +14,7 @@ case class Customer(barbershop: Barbershop) extends Actor {
       barbershop.door ! Leaving
     }
     case Wait => barbershop.chairs ! IsSeatAvailable
-    case TakeASeat => log.info("sitting down")
+    case TakeSeat => log.info("sitting down")
     case NoSeatsAvailable => log.info("Standing in line")
     case msg => log.error("Unknown message %s", msg)
   }

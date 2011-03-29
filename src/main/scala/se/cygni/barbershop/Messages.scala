@@ -37,7 +37,7 @@ case object IsSeatAvailable
 /**
  * Take a seat in the waiting room
  */
-case object TakeASeat
+case object TakeSeat
 
 /**
  * There are no free chairs
@@ -64,5 +64,24 @@ case object CutMe
  */
 case class GotoBarber(barber:ActorRef)
 
+/**
+ * IsPositionAvailable in the waiting line
+ */
+case object IsPositionAvailable
+
+/**
+ * Customer is allowed into the waiting line
+ */
+case object WaitInLine
+
+/**
+ *   Waiting line is full
+ */
+case object WaitingLineFull
+
+/**
+ * Customer in waiting line claims a seat
+ */
+case object ClaimSeat
 
 

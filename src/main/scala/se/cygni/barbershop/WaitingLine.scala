@@ -4,31 +4,27 @@ import collection.immutable.Queue
 import akka.actor.{Actor, ActorRef}
 
 
-case class WaitingLine(numberOfSpots:Int)  extends Actor {
+case class WaitingLine(numberOfPositions:Int)  extends Actor {
 
   protected def receive = lineReceive(Queue[ActorRef]())
 
-  def lineReceive(takenSpots: Queue[ActorRef]): Receive =  null
-  /*
-  {
-    case IsSpotAvailable => {
-      if (takenSpots.size < numberOfChairs) {
-        log.info("Take spot %d ", takenSpots.size)
-        self.reply(TakeASpot)
-        become(lineReceive(takenSpots enqueue self.sender.get))
+  def lineReceive(takenPositions: Queue[ActorRef]): Receive = {
+    case IsPositionAvailable => {
+      if (takenPositions.size < numberOfPositions) {
+        log.info("Wait in line, position %d ", takenPositions.size)
+        self.reply(WaitInLine)
+        become(lineReceive(takenPositions enqueue self.sender.get))
       } else {
-        log.info("Sorry, no spots available")
-        self.reply(NoSpotsAvailable)
+        log.info("Sorry, waitingline is full")
+        self.reply(WaitingLineFull)
       }
     }
-    case TakeASeat =>if (takenSpots.isEmpty) {
+    case TakeSeat =>if (takenPositions.isEmpty) {
       self.reply(NoCustomersWaiting)
     } else {
-      val (customer, tail) = takenSpots.dequeue
-
+      val (customer, tail) = takenPositions.dequeue
       become(lineReceive(tail))
     }
     case msg => log.error("Unknown message: %s", msg)
   }
-  */
 }
