@@ -10,7 +10,6 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
     startSleeping
   }
 
-
   override def postStop = {
     log.info("%s going home", name)
   }
@@ -33,10 +32,10 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
   }
 
   def cut(): Unit = {
-    log.info("Cutting")
+    log.info("%s is cutting", name)
     val time = cutTime
     Thread.sleep(time)
-    log.info("cutted in %d", time)
+    log.info("%s cutted in %d", name, time)
     self.reply(CutDone(time))
     chairs ! NextCustomer
   }

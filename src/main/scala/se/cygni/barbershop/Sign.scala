@@ -10,7 +10,9 @@ class Sign extends Actor {
   def signReceive(freeBarbers: Queue[ActorRef]): Receive = {
     case StartSleeping => {
       if (self.sender.isDefined) {}
-      become(signReceive(freeBarbers enqueue self.sender.get))
+      val queue = freeBarbers enqueue self.sender.get
+      log.info("%d sleeping barbers", queue.size)
+      become(signReceive(queue))
     }
     case WakeUp => {
       if (freeBarbers.isEmpty) {
@@ -19,6 +21,7 @@ class Sign extends Actor {
         val (barber: ActorRef, tail) = freeBarbers.dequeue
         log.info("Try %s", barber)
         barber forward WakeUp
+        log.info("%d sleeping barbers", tail.size)
         become(signReceive(tail))
       }
     }
