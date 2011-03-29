@@ -65,9 +65,9 @@ case object CutMe
 case class GotoBarber(barber:ActorRef)
 
 /**
- * IsPositionAvailable in the waiting line
+ * Customer tries to get in the line
  */
-case object IsPositionAvailable
+case object TryGetInLine
 
 /**
  * Customer is allowed into the waiting line
@@ -77,7 +77,7 @@ case object WaitInLine
 /**
  *   Waiting line is full
  */
-case object WaitingLineFull
+case object WaitinglineFull
 
 /**
  * Customer in waiting line claims a seat

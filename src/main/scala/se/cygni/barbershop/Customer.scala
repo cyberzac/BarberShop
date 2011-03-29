@@ -1,6 +1,6 @@
 package se.cygni.barbershop
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.Actor
 
 case class Customer(barbershop: Barbershop) extends Actor {
 
@@ -14,8 +14,12 @@ case class Customer(barbershop: Barbershop) extends Actor {
       barbershop.door ! Leaving
     }
     case Wait => barbershop.chairs ! IsSeatAvailable
-    case TakeSeat => log.info("sitting down")
-    case NoSeatsAvailable => log.info("Standing in line")
+    case TakeSeat => log.info("Sitting down")
+    case WaitInLine => log.info("Waiting in line")
+    case NoSeatsAvailable => barbershop.waitingLine ! TryGetInLine
+    case WaitinglineFull => barbershop.door ! Leaving
+    case ClaimSeat => barbershop.chairs ! ClaimSeat
+    case GotoBarber(barber) => barber ! CutMe
     case msg => log.error("Unknown message %s", msg)
   }
 }
