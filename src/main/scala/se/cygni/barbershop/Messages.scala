@@ -8,10 +8,15 @@ import akka.actor.ActorRef
 case object WakeUp
 
 /**
+ * Barber begins to cut
+ */
+case object Cutting
+
+/**
  * Hair cut is done
  * @param time, how long time the haircut took
  */
-case class CutDone(time: Long)
+case object  CutDone
 
 /**
  * Barber is sleeping

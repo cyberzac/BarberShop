@@ -37,7 +37,8 @@ case class Chairs(numberOfChairs: Int, waitingLine: ActorRef) extends Actor {
     } else {
       val claimed = claimedSeatCount - 1
       val queue = takenChairs enqueue self.sender.get
-      log.info("customer %s is sitting down (%s)", self.sender.get.getId, state(claimed, queue))
+      val customer = self.sender.get
+      log.info("told customer %s to sit down in claimed seat (%s)", customer.getId, state(claimed, queue))
       become(chairsReceive(claimed, queue))
     }
     case NoCustomersWaiting => if (claimedSeatCount == 0) {

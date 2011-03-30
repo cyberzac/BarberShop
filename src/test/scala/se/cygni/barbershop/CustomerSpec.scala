@@ -24,7 +24,7 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
 
 
     "Leave after beeing cut" in {
-      customer ! CutDone(300)
+      customer ! CutDone
       door.expectMsg(duration, Leaving)
     }
 

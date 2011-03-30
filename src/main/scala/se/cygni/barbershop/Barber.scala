@@ -34,12 +34,13 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
   }
 
   def cut(): Unit = {
-    val customer = self.sender.get.getId
-    log.info("%s is cutting %s", name, customer)
+    val customer = self.sender.get
+    log.info("%s is cutting %s", name, customer.getId)
+    customer ! Cutting
     val time = cutTime
     Thread.sleep(time)
-    log.info("%s cut %s in %d ms", name, customer, time)
-    self.reply(CutDone(time))
+    log.info("%s cut %s in %d ms", name, customer.getId, time)
+    self.reply(CutDone)
     log.info("%s calls for next customer", name)
     chairs ! NextCustomer
   }
