@@ -7,9 +7,9 @@ import org.specs.Specification
 
 class WaitinglineSpec extends Specification with TestKit with TestStubs {
 
-  "The Waitingline" should {
+  "The Line" should {
 
-    val line = actorOf(new Waitingline(2)).start
+    val line = actorOf(new Line(2)).start
 
     doAfter {
       line stop

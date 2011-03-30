@@ -11,7 +11,7 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
   "A customer" should {
 
     val duration = 200 millis
-    val customer = actorOf(new Customer(barbershopStub)).start
+    val customer = actorOf(new Customer("dut", barbershopStub)).start
 
     doBefore {
       // A customer always sends a WakeUp message when started

@@ -1,0 +1,17 @@
+<configuration>
+
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- encoders are assigned the type
+         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %10logger{0} %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="warn">
+    <appender-ref ref="stdout" />
+  </root>
+
+    <logger name="se.cygni.barbershop" level="info"/>
+
+</configuration>

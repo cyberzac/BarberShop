@@ -5,6 +5,8 @@ import akka.actor.{ActorRef, Actor}
 
 case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor {
 
+  self.id=name
+
   override def preStart = {
     log.info("%s came to work", name)
     startSleeping
@@ -32,11 +34,13 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
   }
 
   def cut(): Unit = {
-    log.info("%s is cutting", name)
+    val customer = self.sender.get.getId
+    log.info("%s is cutting %s", name, customer)
     val time = cutTime
     Thread.sleep(time)
-    log.info("%s cutted in %d", name, time)
+    log.info("%s cut %s in %d ms", name, customer, time)
     self.reply(CutDone(time))
+    log.info("%s calls for next customer", name)
     chairs ! NextCustomer
   }
 
