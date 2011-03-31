@@ -14,14 +14,14 @@ class Sign extends Actor {
       log.info("sleeping: %s", barberNames(queue))
       become(signReceive(queue))
     }
-    case WakeUp => {
+    case EnteredShop => {
       if (freeBarbers.isEmpty) {
         log.info("%s is told to wait", self.sender.get.getId)
         self.reply(Wait)
       } else {
         val (barber: ActorRef, tail) = freeBarbers.dequeue
         log.info("%s to  %s (sleeping %s)", self.sender.get.getId, barber.getId, barberNames(tail))
-        barber forward WakeUp
+        barber forward CutMe
         become(signReceive(tail))
       }
     }
