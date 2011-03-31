@@ -14,8 +14,8 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
     val customer = actorOf(new Customer("dut", barbershopStub)).start
 
     doBefore {
-      // A customer always sends a WakeUp message when started
-      sign.expectMsg(duration, WakeUp)
+      // A customer always sends a EnteredShop message when started
+      sign.expectMsg(duration, EnteredShop)
     }
 
     doAfterSpec {

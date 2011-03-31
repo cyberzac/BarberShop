@@ -8,7 +8,7 @@ case class Customer(id:String, barbershop: Barbershop) extends Actor {
 
   override def preStart = {
     log.info("%s entered shop", id)
-    barbershop.sign ! WakeUp
+    barbershop.sign ! EnteredShop
   }
 
   protected def receive = customerReceive(CustomerStats())
@@ -39,7 +39,6 @@ def customerReceive(stats:CustomerStats): Receive = {
       become(customerReceive(stats.sit))
     }
     case GotoBarber(barber) => barber ! CutMe
-    case msg => log.error("Unknown message %s", msg)
   }
 }
 

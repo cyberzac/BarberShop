@@ -21,8 +21,8 @@ class BarberSpec extends Specification with TestKit with TestStubs{
       barber stop
     }
 
-    "Respond with Cutting, CutDone and a NextCustomer toi the Chairs after a WakeUp" in {
-        barber ! WakeUp
+    "Respond with Cutting, CutDone and a NextCustomer toi the Chairs after a CutMe" in {
+        barber ! CutMe
         expectMsgAllOf(800 millis, Cutting, CutDone)
         chairs.expectMsg(100 millis, NextCustomer)
     }
@@ -34,12 +34,5 @@ class BarberSpec extends Specification with TestKit with TestStubs{
       }
     }
 
-    "Respond with a Cutting, CutDone and NextCustomer to the Chairs on a  CutMe message" in {
-     within(900 millis) {
-        barber ! WakeUp
-        expectMsgAllOf(Cutting, CutDone)
-        chairs.expectMsg(NextCustomer)
-      }
-    }
   }
 }

@@ -19,27 +19,27 @@ class SignSpec extends Specification with TestKit {
 
     "Replay with a Wait message on a Wakeup message  if there are no sleeping barbers" in {
       within(duration) {
-        sign ! WakeUp
+        sign ! EnteredShop
         expectMsg(Wait)
       }
     }
 
-    "Forward the WakeUp call to first sleeping barber" in {
+    "Forward the EnteredShop as a CutMe message call to first sleeping barber" in {
       within(500 millis) {
         sign ! StartSleeping // A barber is free
-        sign ! WakeUp
-        expectMsg(WakeUp)
+        sign ! EnteredShop
+        expectMsg(CutMe)
       }
     }
 
-    "Remove the first barber from the sign after dispatching a WakeUp" in {
+    "Remove the first barber from the sign after dispatching a EnteredShop" in {
       within(500 millis) {
         sign ! StartSleeping // A barber is free
-        sign ! WakeUp
-        expectMsg(WakeUp)
+        sign ! EnteredShop
+        expectMsg(CutMe)
       }
       within(duration) {
-        sign ! WakeUp  // No free barbers
+        sign ! EnteredShop  // No free barbers
         expectMsg(Wait)
       }
     }

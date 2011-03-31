@@ -22,15 +22,9 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
   }
 
 
-  def unknownMessage(unknown: Any): Unit = {
-    log.warn("unknown message %s", unknown)
-  }
-
    protected def receive = {
-      case WakeUp => cut()
       case CutMe => cut()
       case NoCustomersWaiting => startSleeping
-      case m => unknownMessage(m)
   }
 
   def cut(): Unit = {
