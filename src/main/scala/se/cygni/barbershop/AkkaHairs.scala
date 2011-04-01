@@ -7,7 +7,7 @@ import scala.math.random
 object AkkaHairs {
 
   def main(args: Array[String]) {
-    val numberOfCustomers = 20
+    val numberOfCustomers = 50
     val numberOfChairs = 4
     val maxLine = 5
     val barberNames = List("Edward", "Jean-Paul", "Gulletussan")
@@ -22,18 +22,30 @@ object AkkaHairs {
 
     1.to(numberOfCustomers) foreach {
       id =>
-      val wait:Long = delay
+      val wait:Long = poisson(50)
       log.debug("Waiting %d", wait)
-      Thread.sleep(delay)
+      Thread.sleep(wait)
       actorOf(new Customer(id.toString, shop)).start
     }
 
-    def delay: Long = {
+   // def delay = poisson(100)
+
+    def uniform: Long = {
       val max = 100
       val min = 0
       min + (random * (max - min)).intValue
     }
   }
 
+  def poisson(lamda:Int): Int = {
+    val L = math.exp(-lamda)
+    var k = 0
+    var p = 1D
+    while(p > L) {
+      k += 1
+      p *= random
+    }
+    k -1
+  }
 
 }
