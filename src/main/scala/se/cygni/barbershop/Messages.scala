@@ -3,6 +3,46 @@ package se.cygni.barbershop
 import akka.actor.ActorRef
 
 /**
+ * Messages to the tracker
+ */
+sealed trait TrackerMessages
+
+/**
+ * Barber is sleeping
+ */
+case object TrackSleeping extends TrackerMessages
+
+/**
+ * Barber is cutting
+ */
+case class TrackCutting(customer:ActorRef) extends TrackerMessages
+
+/**
+ * Customer is leaving
+ */
+case class TrackLeaving(stats:Option[CustomerStats]) extends TrackerMessages
+
+/**
+ * Customer is sitting down
+ */
+case class TrackSat(chair:Int)  extends TrackerMessages
+
+/**
+ * Customer left a chair
+ */
+case class TrackLeftChair(chair:Int) extends TrackerMessages
+
+/**
+ * Customer is getting in line
+ */
+case object TrackEnteredLine  extends TrackerMessages
+
+/**
+ * Customer left line
+ */
+case object TrackLeftLine extends TrackerMessages
+
+/**
  * Barber is sleeping
  * @param time, when started sleeping
  */
@@ -11,7 +51,7 @@ case object StartSleeping
 /**
  * Request for a barber
  */
-case object EnteredShop
+case object RequestBarber
 
 
 /**
@@ -27,7 +67,7 @@ case object NoCustomersWaiting
 /**
  * Customer in waiting line claims a seat
  */
-case object ClaimSeat
+case object ClaimChair
 
 /**
  * Barber wants the next waiting customer
@@ -51,14 +91,23 @@ case object Cutting
 
 /**
  * Hair cut is done
- * @param time, how long time the haircut took
  */
 case object  CutDone
 
 /**
  * Take a seat in the waiting room
  */
-case object TakeSeat
+case class TakeChair(chair:Int)
+
+/**
+ * Leave a chair
+ */
+case class LeftChair(chair:Int)
+
+/**
+ * There is a free chair
+ */
+case object FreeChair
 
 /**
  * There are no free chairs
@@ -68,12 +117,17 @@ case object NoSeatsAvailable
 /**
  * Customer is allowed into the waiting line
  */
-case object WaitInLine
+case class  WaitInLine(pos:Int)
 
 /**
  *   Waiting line is full
  */
-case object WaitinglineFull
+case object LineFull
+
+/**
+ * Customer left the line
+ */
+case object LeftLine
 
 /**
  * Goto the specified barber
@@ -83,10 +137,5 @@ case class GotoBarber(barber:ActorRef)
 /**
  * Customer tries to get in the line
  */
-case object TryGetInLine
-
-/**
- * Customer is leaving
- */
-case object Leaving
+case object GetInLine
 

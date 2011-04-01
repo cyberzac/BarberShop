@@ -3,7 +3,7 @@ package se.cygni.barbershop
 import scala.math.random
 import akka.actor.{ActorRef, Actor}
 
-case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor {
+case class Barber(name: String, sign: ActorRef, chairs: ActorRef, tracker:ActorRef) extends Actor {
 
   self.id=name
 
@@ -19,6 +19,7 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
   private def startSleeping = {
     log.info("%s going to sleep", name)
     sign ! StartSleeping
+    tracker ! TrackSleeping
   }
 
 
@@ -31,6 +32,7 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef) extends Actor 
     val customer = self.sender.get
     log.info("%s is cutting %s", name, customer.getId)
     customer ! Cutting
+    tracker ! TrackCutting(customer)
     val time = cutTime
     Thread.sleep(time)
     log.info("%s cut %s in %d ms", name, customer.getId, time)

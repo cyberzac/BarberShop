@@ -15,31 +15,25 @@ class SignSpec extends Specification with TestKit {
       sign stop
     }
 
-    val duration = 100 millis
+    val timeout = 200 millis
 
-    "Replay with a Wait message on a Wakeup message  if there are no sleeping barbers" in {
-      within(duration) {
-        sign ! EnteredShop
-        expectMsg(Wait)
-      }
+    "Replay with a Wait message on a RequestBarber message  if there are no sleeping barbers" in {
+      sign ! RequestBarber
+      expectMsg(timeout, Wait)
     }
 
-    "Forward the EnteredShop as a CutMe message call to first sleeping barber" in {
-      within(500 millis) {
-        sign ! StartSleeping // A barber is free
-        sign ! EnteredShop
-        expectMsg(CutMe)
-      }
+    "Forward the RequestBarber as a CutMe message call to first sleeping barber" in {
+      sign ! StartSleeping // A barber is free
+      sign ! RequestBarber
+      expectMsg(500 millis, CutMe)
     }
 
-    "Remove the first barber from the sign after dispatching a EnteredShop" in {
+    "Remove the first barber from the sign after dispatching a RequestBarber" in {
       within(500 millis) {
         sign ! StartSleeping // A barber is free
-        sign ! EnteredShop
+        sign ! RequestBarber
         expectMsg(CutMe)
-      }
-      within(duration) {
-        sign ! EnteredShop  // No free barbers
+        sign ! RequestBarber // No free barbers
         expectMsg(Wait)
       }
     }

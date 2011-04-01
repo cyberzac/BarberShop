@@ -3,53 +3,60 @@ package se.cygni.barbershop
 import collection.immutable.Queue
 import akka.actor.{ActorRef, Actor}
 
-case class Chairs(numberOfChairs: Int, waitingLine: ActorRef) extends Actor {
+case class Chairs(numberOfChairs: Int, line: ActorRef, tracker:ActorRef) extends Actor {
 
-  protected def receive = chairsReceive(0, Queue[ActorRef]())
+  case class Entry(customer:ActorRef, chair:Int)
 
-  def state(claimed: Int, queue: Queue[ActorRef]): String = "sitting %d, claimed %d".format(queue.size, claimed)
+  val chairs = Range(0, numberOfChairs).reverse.foldLeft(List[Int]()) ((l, e) => e :: l)
 
-  def chairsReceive(claimedSeatCount: Int, takenChairs: Queue[ActorRef]): Receive = {
+  protected def receive = chairsReceive(0, Queue[Entry](), chairs)
+
+  def stateAsString(claimed: Int, queue: Queue[Entry]): String = "sitting %d, claimed %d".format(queue.size, claimed)
+
+  def chairsReceive(claimed: Int, taken: Queue[Entry], free:List[Int]): Receive = {
     case IsSeatAvailable => {
-      if (takenChairs.size < (numberOfChairs - claimedSeatCount)) {
-        self.reply(TakeSeat)
-        val queue = takenChairs enqueue self.sender.get
-        log.info("told %s to sit down (%s)", self.sender.get.getId, state(claimedSeatCount, queue))
-        become(chairsReceive(claimedSeatCount, queue))
+      if (free.size - claimed > 0) {
+        val (chair :: newFree) = free
+        self.reply(TakeChair(chair))
+        val newTaken = taken enqueue Entry(self.sender.get, chair)
+        log.info("told %s to sit down in chair %d (%s)", self.sender.get.getId, chair, stateAsString(claimed, newTaken))
+        become(chairsReceive(claimed, newTaken, newFree))
       } else {
-        log.info("no seats available for %s (%s)", self.sender.get.getId, state(claimedSeatCount, takenChairs))
+        log.info("no seats available for %s (%s)", self.sender.get.getId, stateAsString(claimed, taken))
         self.reply(NoSeatsAvailable)
       }
     }
-    case NextCustomer => if (takenChairs.isEmpty) {
+    case NextCustomer => if (taken.isEmpty) {
       self.reply(NoCustomersWaiting)
-      log.info("no customers is sitting (%s)", state(claimedSeatCount, takenChairs))
+      log.info("no customers is sitting (%s)", stateAsString(claimed, taken))
     } else {
-      val (customer, tail) = takenChairs.dequeue
-      log.info("sending %s to %s (%s)", customer.getId, self.sender.get.getId, state(claimedSeatCount, tail))
+      val (Entry(customer, chair), newTaken) = taken.dequeue
+      val newFree = chair :: free
+      log.info("sending %s to %s (%s)", customer.getId, self.sender.get.getId, stateAsString(claimed, newTaken))
       customer ! GotoBarber(self.sender.get)
+      tracker ! TrackLeftChair(chair)
       log.info("check if there are customers standing in line")
-      waitingLine ! TakeSeat
-      become(chairsReceive(claimedSeatCount+1, tail))
+      line ! FreeChair
+      become(chairsReceive(claimed+1, newTaken, newFree))
     }
-    case ClaimSeat => if (claimedSeatCount == 0) {
-      log.error("Spurios ClaimSeat message ")
+    case ClaimChair => if (claimed == 0) {
+      log.error("Spurios ClaimChair message ")
     } else {
-      val claimed = claimedSeatCount - 1
-      val queue = takenChairs enqueue self.sender.get
+      val (chair :: newFree) = free
+      val newTaken = taken enqueue Entry(self.sender.get, chair)
       val customer = self.sender.get
-      log.info("told customer %s to sit down in claimed seat (%s)", customer.getId, state(claimed, queue))
-      become(chairsReceive(claimed, queue))
+      customer ! TakeChair(chair)
+      log.info("told customer %s to sit down in claimed chair (%s)", customer.getId, stateAsString(claimed, newTaken))
+      become(chairsReceive(claimed -1, newTaken, newFree))
     }
-    case NoCustomersWaiting => if (claimedSeatCount == 0) {
-      log.error("Spurios ClaimSeat message ")
+    case NoCustomersWaiting => if (claimed == 0) {
+      log.error("Spurios ClaimChair message ")
     } else {
-      val claimed = claimedSeatCount - 1
-      log.info("no customers standing (%s)", state(claimed, takenChairs))
-      become(chairsReceive(claimed, takenChairs))
+      val c = claimed - 1
+      log.info("no customers standing (%s)", stateAsString(c, taken))
+      become(chairsReceive(claimed-1, taken, free))
     }
 
     case msg => log.error("Unknown message: %s", msg)
   }
-
 }

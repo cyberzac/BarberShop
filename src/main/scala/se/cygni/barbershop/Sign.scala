@@ -14,7 +14,7 @@ class Sign extends Actor {
       log.info("sleeping: %s", barberNames(queue))
       become(signReceive(queue))
     }
-    case EnteredShop => {
+    case RequestBarber => {
       if (freeBarbers.isEmpty) {
         log.info("%s is told to wait", self.sender.get.getId)
         self.reply(Wait)

@@ -10,12 +10,12 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
 
   "A customer" should {
 
-    val duration = 200 millis
+    val timeout = 200 millis
     val customer = actorOf(new Customer("dut", barbershopStub)).start
 
     doBefore {
-      // A customer always sends a EnteredShop message when started
-      sign.expectMsg(duration, EnteredShop)
+      // A customer always sends a RequestBarber message when started
+      sign.expectMsg(timeout, RequestBarber)
     }
 
     doAfterSpec {
@@ -25,43 +25,49 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
 
     "Leave after beeing cut" in {
       customer ! CutDone
-      door.expectMsg(duration, Leaving)
+      tracker.expectMsgClass(timeout, classOf[TrackLeaving])
     }
 
-    object barber extends Stub
-    "Sends a CutMe message to the barber if receiving a GotoBarber message" in {
+    "Sends a CutMe message to the barber when receiving a GotoBarber message" in {
+      object barber extends Stub
+      customer ! TakeChair(1)
       customer ! GotoBarber(barber.ref)
-      barber.expectMsg(duration, CutMe)
+      barber.expectMsg(timeout, CutMe)
     }
 
-    "Try to get a chair if beeing told to Wait " in {
+    "Query Chairs for a chair  if beeing told to Wait " in {
       customer ! Wait
-      chairs.expectMsg(duration, IsSeatAvailable)
+      chairs.expectMsg(timeout, IsSeatAvailable)
     }
 
-    "Sit down and wait if receiving a TakeSeat message" in {
-      customer ! TakeSeat
-      expectNoMsg(duration)
+    "Sit down and wait if receiving a TakeChair message" in {
+      customer ! TakeChair(1)
+      expectNoMsg(timeout)
     }
 
-    "Stand in line if receiving a StandInLine message" in {
+    "Stand in line if receiving a WaitInLine message" in {
       customer ! WaitInLine
-      expectNoMsg(duration)
+      expectNoMsg(timeout)
     }
 
     "Try standing in line if being told that there are no seats available" in {
       customer ! NoSeatsAvailable
-      waitingLine.expectMsg(duration, TryGetInLine)
+      line.expectMsg(timeout, GetInLine)
     }
 
-    "Claim a seat if receiving a Claimseat message" in {
-      customer ! ClaimSeat
-      chairs.expectMsg(duration, ClaimSeat)
+    "Claim a chair when receiving a ClaimChair message" in {
+      customer ! ClaimChair
+      chairs.expectMsg(timeout, ClaimChair)
     }
 
     "Leave if waiting live is full" in {
-      customer ! WaitinglineFull
-      door.expectMsg(duration, Leaving)
+      customer ! LineFull
+      tracker.expectMsg(timeout, TrackLeaving(None))
+    }
+
+    "Send a TrackerEnteredLine on a WaitInLine message" in {
+      customer ! WaitInLine
+      tracker.expectMsg(TrackEnteredLine)
     }
 
   }

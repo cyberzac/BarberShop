@@ -11,8 +11,8 @@ trait TestStubs {
 
   val  sign = new Stub
   val  chairs  = new Stub
-  val door = new Stub
-  val waitingLine = new Stub
-  val barbershopStub = Barbershop(sign = sign.ref, chairs = chairs.ref, door = door.ref, waitingLine = waitingLine.ref)
+  val tracker = new Stub
+  val line = new Stub
+  val barbershopStub = Barbershop(sign = sign.ref, chairs = chairs.ref, tracker = tracker.ref, line = line.ref)
 
 }

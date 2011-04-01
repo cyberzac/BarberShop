@@ -8,17 +8,17 @@ object AkkaHairs {
 
   def main(args: Array[String]) {
     val numberOfCustomers = 20
-    val numberOfChairs = 10
-    val maxLine = 10
+    val numberOfChairs = 4
+    val maxLine = 5
     val barberNames = List("Edward", "Jean-Paul", "Gulletussan")
 
     val sign = actorOf[Sign]
-    val line = actorOf(new Line(maxLine))
-    val chairs = actorOf(new Chairs(numberOfChairs, line))
-    val door = actorOf(new Door(numberOfCustomers))
-    val shop = Barbershop(sign = sign, chairs = chairs, waitingLine = line, door = door)
+    val tracker = actorOf(new Tracker(numberOfCustomers, numberOfChairs, maxLine))
+    val line = actorOf(new Line(maxLine, tracker))
+    val chairs = actorOf(new Chairs(numberOfChairs, line, tracker))
+    val shop = Barbershop(sign = sign, chairs = chairs, line = line, tracker = tracker)
     shop.start
-    val barbers = barberNames map {name => actorOf(new Barber(name, sign = sign, chairs = chairs)).start}
+    val barbers = barberNames map {name => actorOf(new Barber(name, sign = sign, chairs = chairs, tracker = tracker)).start}
 
     1.to(numberOfCustomers) foreach {
       id =>
