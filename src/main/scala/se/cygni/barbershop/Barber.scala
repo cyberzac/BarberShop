@@ -37,6 +37,7 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef, tracker:ActorR
     Thread.sleep(time)
     log.info("%s cut %s in %d ms", name, customer.getId, time)
     self.reply(CutDone)
+    tracker ! TrackCutDone
     log.info("%s calls for next customer", name)
     chairs ! NextCustomer
   }

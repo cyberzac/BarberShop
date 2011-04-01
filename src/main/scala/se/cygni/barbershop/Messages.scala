@@ -18,6 +18,11 @@ case object TrackSleeping extends TrackerMessages
 case class TrackCutting(customer:ActorRef) extends TrackerMessages
 
 /**
+ * Barber completed cutting
+ */
+case object TrackCutDone extends TrackerMessages
+
+/**
  * Customer is leaving
  */
 case class TrackLeaving(stats:Option[CustomerStats]) extends TrackerMessages

@@ -20,6 +20,7 @@ case class Tracker(totalCustomers: Int, numberOfChairs: Int, maxLine: Int) exten
     }
     case TrackSleeping => become(state.sleeping(BarberRef(sender)))
     case TrackCutting(customer) => become(state.cutting(BarberRef(sender), CustomerRef(customer)))
+    case TrackCutDone => become(state.cutDone(BarberRef(sender)))
     case TrackSat(chair) => become(state.sat(CustomerRef(sender), chair))
     case TrackLeftChair(chair) => become(state.leftChair(chair))
     case TrackEnteredLine => become(state.enterLine(CustomerRef(sender)))
@@ -52,6 +53,8 @@ case class TrackerState(maxLine:Int, barbers: Map[BarberRef, String], chairs: Ve
   def sleeping(barber: BarberRef): TrackerState = copy(barbers = (barbers.updated(barber, " z ")))
 
   def cutting(barber: BarberRef, customer: CustomerRef): TrackerState = copy(barbers = barbers.updated(barber, customer.id))
+
+  def cutDone(barber: BarberRef): TrackerState = copy(barbers = barbers.updated(barber, "."))
 
   def sat(customer: CustomerRef, chair: Int): TrackerState = copy(chairs = chairs.updated(chair, customer.id))
 
