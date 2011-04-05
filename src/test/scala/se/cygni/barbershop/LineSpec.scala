@@ -9,7 +9,11 @@ class LineSpec extends Specification with TestKit with TestStubs {
 
   "The Line" should {
 
-    val line = actorOf(new Line(2, tracker.ref)).start
+    val line = actorOf(new Line(2)).start
+
+    doBefore {
+      line ! barbershop
+    }
 
     doAfter {
       line stop
@@ -17,42 +21,36 @@ class LineSpec extends Specification with TestKit with TestStubs {
 
     val timeout = 200 millis
 
+
+    "Forward a RequestBaraber message if line is empty" in {
+      line ! RequestBarber
+      chairs.expectMsg(timeout, RequestBarber(testActor))
+    }
+
     "Reply with a WaitInLine message when there are room" in {
-      within(timeout) {
-        line ! GetInLine
-        expectMsg(WaitInLine)
-      }
+      line ! Wait(customer1.ref)
+      expectNoMsg(timeout)
+      customer1.expectMsg(timeout, WaitInLine)
     }
 
-    "Reply with a WaitingLineFull message when  is no room " in {
-      within(timeout) {
-        line ! GetInLine // Becomes first in line
-        expectMsg(WaitInLine)
-        line ! GetInLine // Becomes second
-        expectMsg(WaitInLine)
-        line ! GetInLine // Line is full
-        expectMsg(LineFull)
-      }
+    "Reply with a WaitInLine directly when line is not empty" in {
+      line ! Wait(customer1.ref) //Stands in line, line not empty
+      line ! RequestBarber
+      expectMsg(timeout, WaitInLine)
     }
 
-    "Reply with a NoCustomersWaiting message on a TakeChair message if no one is in line" in {
-      within(timeout) {
-        line ! FreeChair
-        expectMsg(NoCustomersWaiting)
-      }
+    "Reply with a LineFull message when  is no room " in {
+      line ! Wait(customer1.ref) // Becomes first in line
+      line ! RequestBarber // Becomes second
+      expectMsg(timeout, WaitInLine)
+      line ! RequestBarber // Line is full
+      expectMsg(timeout, LineFull)
     }
 
-
-    "When a FreeChair message is received, send the first customer to claim the chair and a LeftLine to the tracker" in {
-      within(500 millis) {
-        line ! GetInLine
-        expectMsg(WaitInLine)
-        line ! FreeChair
-        expectMsg(ClaimChair)
-        tracker.expectMsg(timeout, TrackLeftLine)
-        line ! FreeChair
-        expectMsg(NoCustomersWaiting)
-      }
+    "Reply with a RequestBaraber(customer) on a NextCustomer if line is non empty" in {
+      line ! Wait(customer1.ref) // Becomes first in line
+      line ! NextCustomer
+      chairs.expectMsg(timeout, RequestBarber(customer1.ref))
     }
   }
 }

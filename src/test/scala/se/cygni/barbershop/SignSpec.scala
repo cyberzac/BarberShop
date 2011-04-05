@@ -6,38 +6,44 @@ import akka.util.duration._
 import akka.actor.Actor._
 
 
-class SignSpec extends Specification with TestKit {
+class SignSpec extends Specification with TestKit with TestStubs {
 
-  val sign = actorOf[Sign].start
+  val dut = actorOf[Sign].start
 
   "The sign" should {
+
+    doBefore {
+      dut ! barbershop
+    }
+
     doAfter {
-      sign stop
+      dut stop
     }
 
     val timeout = 200 millis
 
     "Replay with a Wait message on a RequestBarber message  if there are no sleeping barbers" in {
-      sign ! RequestBarber
-      expectMsg(timeout, Wait)
+      chairs.sendMessage(dut, RequestBarber(customer1.ref))
+      chairs.expectMsg(timeout, Wait(customer1.ref))
     }
 
-    "Forward the RequestBarber as a CutMe message call to first sleeping barber" in {
-      sign ! StartSleeping // A barber is free
-      sign ! RequestBarber
-      expectMsg(500 millis, CutMe)
+    "Forward the RequestBarber message to first sleeping barber" in {
+      barber1.sendMessage(dut, Sleeping) // A barber is free
+      val requestBarber = RequestBarber(customer1.ref)
+      chairs.sendMessage(dut, requestBarber)
+      barber1.expectMsg(timeout, requestBarber)
     }
 
     "Remove the first barber from the sign after dispatching a RequestBarber" in {
       within(500 millis) {
-        sign ! StartSleeping // A barber is free
-        sign ! RequestBarber
-        expectMsg(CutMe)
-        sign ! RequestBarber // No free barbers
-        expectMsg(Wait)
+        barber1.sendMessage(dut, Sleeping) // A barber is free
+        val requestBarber = RequestBarber(customer1.ref)
+        chairs.sendMessage(dut, requestBarber)
+        barber1.expectMsg(timeout, requestBarber)
+        chairs.sendMessage(dut, RequestBarber(customer2.ref))
+        chairs.expectMsg(timeout, Wait(customer2.ref))
       }
     }
-
 
   }
 

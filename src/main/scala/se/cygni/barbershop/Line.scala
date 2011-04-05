@@ -3,36 +3,42 @@ package se.cygni.barbershop
 import collection.immutable.Queue
 import akka.actor.{Actor, ActorRef}
 
+case class Line(maxLine: Int) extends Actor with PostStart {
 
-case class Line(maxLine:Int, tracker:ActorRef)  extends Actor {
+  def receive = lineReceive(Queue[ActorRef]())
 
-  protected def receive = lineReceive(Queue[ActorRef]())
-
-  def lineReceive(inline: Queue[ActorRef]): Receive = {
-    case GetInLine => {
+  def lineReceive(queue: Queue[ActorRef]): Receive = {
+    case RequestBarber => {
       val customer = self.sender.get
-      val message = if (inline.size < maxLine) {
-        self.reply(WaitInLine)
-        val newLine = inline enqueue customer
-        become(lineReceive(newLine))
-        "wait in line (%d)".format(newLine.size)
+      if (queue.isEmpty) {
+        chairs ! RequestBarber(customer)
       } else {
-        self.reply(LineFull)
-        "sorry waitingline is full (%d)".format(inline.size)
+        queueCustomer(customer, queue)
       }
-        log.info("told %s %s", customer.getId, message)
+    }
 
-    }
-    case FreeChair =>if (inline.isEmpty) {
-      self.reply(NoCustomersWaiting)
-      log.info("no customers standing", inline.size)
+    case Wait(customer) => queueCustomer(customer, queue)
+
+    case NextCustomer => if (queue.isEmpty) {
+      log.debug("no customers standing", queue.size)
     } else {
-      val (customer, tail) = inline.dequeue
-      customer ! ClaimChair
-      tracker ! TrackLeftLine
+      val (customer, tail) = queue.dequeue
       become(lineReceive(tail))
-      log.info("%s to claim a seat", customer.getId)
+      chairs ! RequestBarber(customer)
+      tracker ! TrackLeftLine
+      log.debug("told %s to sit down", customer.getId)
     }
-    case msg => log.error("Unknown message: %s", msg)
   }
+
+  def queueCustomer(customer: ActorRef, queue: Queue[ActorRef]): Unit = {
+    if (queue.size < maxLine) {
+      customer ! WaitInLine
+      become(lineReceive(queue enqueue customer))
+      log.debug("%s wait in line (%d)".format(customer.id, queue.size))
+    } else {
+      customer ! LineFull
+      log.debug("%s sorry waitingline is full (%d)".format(customer.id, queue.size))
+    }
+  }
+
 }

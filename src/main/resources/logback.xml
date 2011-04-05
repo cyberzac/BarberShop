@@ -12,6 +12,6 @@
     <appender-ref ref="stdout" />
   </root>
 
-    <logger name="se.cygni.barbershop" level="info"/>
+    <logger name="se.cygni.barbershop" level="debug"/>
 
 </configuration>

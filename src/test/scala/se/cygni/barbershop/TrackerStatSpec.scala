@@ -6,7 +6,7 @@ import akka.util.TestKit
 class TrackerStatSpec extends Specification with TestKit {
 
   "A TrackerState" should {
-    val state = TrackerState(chairs = 5)
+    val state = TrackerState(chairs = 5, maxLine = 5)
 
     "set a barber as sleeping" in {
       val barber = BarberRef(testActor)

@@ -10,26 +10,33 @@ class BarberSpec extends Specification with TestKit with TestStubs {
 
   "A barber" should {
 
-    val barber = actorOf(new Barber("Edward", sign = barbershopStub.sign, chairs = barbershopStub.chairs, barbershopStub.tracker)).start
+    val barber = actorOf(new Barber("Edward")).start
 
     doBefore {
-      // A barber always send a StartSleeping messages when started
-      sign.expectMsg(100 millis, StartSleeping)
+      barber ! barbershop
+      // A barber always send a Sleeping messages when started
+      sign.expectMsg(100 millis, Sleeping)
     }
 
     doAfter {
       barber stop
     }
 
-    "Respond with Cutting, CutDone and a NextCustomer toi the Chairs after a CutMe" in {
-      barber ! CutMe
-      expectMsgAllOf(700 millis, Cutting, CutDone)
+    "Respond with Cutting, CutDone and a NextCustomer after a RequestBarber(customer)" in {
+      sign.sendMessage(barber, RequestBarber(customer1.ref))
+      customer1.expectMsgAllOf(700 millis, Cutting, CutDone)
       chairs.expectMsg(100 millis, NextCustomer)
     }
 
-    "Respond with a StartSleeping on a NoCustomersWaiting message" in {
-      barber ! NoCustomersWaiting
-      sign.expectMsg(100 millis, StartSleeping)
+    "Respond with Cutting, CutDone and a NextCustomer after a RequestBarber" in {
+      customer1.sendMessage(barber, RequestBarber)
+      customer1.expectMsgAllOf(700 millis, Cutting, CutDone)
+      chairs.expectMsg(100 millis, NextCustomer)
+    }
+
+    "Respond with a Sleeping on a NoCustomersWaiting message" in {
+      chairs.sendMessage(barber, NoCustomersWaiting)
+      sign.expectMsg(100 millis, Sleeping)
       tracker.expectMsg(100 millis, TrackSleeping)
     }
 

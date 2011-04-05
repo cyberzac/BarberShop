@@ -3,7 +3,7 @@ package se.cygni.barbershop
 import akka.actor.{ActorRef, Actor}
 import collection.immutable.Queue
 
-case class Tracker(totalCustomers: Int, numberOfChairs: Int, maxLine: Int) extends Actor {
+case class Tracker(totalCustomers: Int, numberOfChairs: Int, maxLine: Int) extends Actor with PostStart {
   protected def receive = trackerReceive(TrackerState(numberOfChairs, maxLine))
 
   def trackerReceive(state: TrackerState): Receive = {
@@ -14,8 +14,7 @@ case class Tracker(totalCustomers: Int, numberOfChairs: Int, maxLine: Int) exten
       val nextState = state.customerLeft(stats)
       become(nextState)
       if (nextState.seen == totalCustomers) {
-        log.info("Last customer left, closing shop")
-        Actor.registry.shutdownAll
+        self ! CloseShop
       }
     }
     case TrackSleeping => become(state.sleeping(BarberRef(sender)))
@@ -25,6 +24,10 @@ case class Tracker(totalCustomers: Int, numberOfChairs: Int, maxLine: Int) exten
     case TrackLeftChair(chair) => become(state.leftChair(chair))
     case TrackEnteredLine => become(state.enterLine(CustomerRef(sender)))
     case TrackLeftLine => become(state.leftLine)
+    case CloseShop => {
+      log.info("Last customer left, closing shop")
+      Actor.registry.shutdownAll
+    }
   }
 
   def sender = self.sender.get
@@ -45,10 +48,10 @@ case class CustomerRef(ref: ActorRef) {
 case class Chair(id: Int)
 
 object TrackerState {
-  def apply(chairs: Int, maxLine:Int) = new TrackerState(maxLine, Map[BarberRef, String](), Vector.fill(chairs)("."), Queue[String](), 0, 0)
+  def apply(chairs: Int, maxLine: Int) = new TrackerState(maxLine, Map[BarberRef, String](), Vector.fill(chairs)("."), Queue[String](), 0, 0)
 }
 
-case class TrackerState(maxLine:Int, barbers: Map[BarberRef, String], chairs: Vector[String], line: Queue[String], seen: Int, rejected: Int) {
+case class TrackerState(maxLine: Int, barbers: Map[BarberRef, String], chairs: Vector[String], line: Queue[String], seen: Int, rejected: Int) {
 
   def sleeping(barber: BarberRef): TrackerState = copy(barbers = (barbers.updated(barber, " z ")))
 

@@ -8,7 +8,7 @@ case class Customer(id: String, barbershop: Barbershop) extends Actor {
 
   override def preStart = {
     log.info("%s entered shop", id)
-    barbershop.sign ! RequestBarber
+    barbershop.line ! RequestBarber
   }
 
   protected def receive = customerReceive(CustomerStats())
@@ -16,35 +16,38 @@ case class Customer(id: String, barbershop: Barbershop) extends Actor {
   def customerReceive(stats: CustomerStats): Receive = {
     case Cutting =>
       become(customerReceive(stats.cut))
+
     case CutDone => {
-      log.info("%s leaving, %s", id, stats.done)
+      log.debug("%s leaving, %s", id, stats.done)
       barbershop.tracker ! TrackLeaving(Some(stats))
     }
-    case Wait => barbershop.chairs ! IsSeatAvailable
+
     case WaitInLine => {
-      log.info("%s waiting in line", id)
+      log.debug("%s waiting in line", id)
       barbershop.tracker ! TrackEnteredLine
       become(customerReceive(stats.stand))
     }
-    case NoSeatsAvailable => barbershop.line ! GetInLine
+
     case LineFull => {
-      log.info("%s no place to stand, I'm leaving", id)
+      log.debug("%s no place to stand, I'm leaving", id)
       barbershop.tracker ! TrackLeaving(None)
     }
     case TakeChair(chair) => {
-      log.info("%s sitting down in chair %d", id, chair)
+      log.debug("%s sitting down in chair %d", id, chair)
       barbershop.tracker ! TrackSat(chair)
       become(customerReceive(stats.sit(chair)))
     }
-    case ClaimChair => barbershop.chairs ! ClaimChair
+
     case GotoBarber(barber) => {
-      barber ! CutMe
+      log.debug("%s going to barber %s ", id, barber.id)
+      barber ! RequestBarber
     }
   }
 }
 
 object CustomerStats {
   def apply() = new CustomerStats(-1, 0L, 0L, 0L, 0L)
+
   def apply(standAt: Long, satAt: Long, cutAt: Long, doneAt: Long) = new CustomerStats(-1, standAt, satAt, cutAt, doneAt)
 }
 

@@ -11,11 +11,11 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
   "A customer" should {
 
     val timeout = 200 millis
-    val customer = actorOf(new Customer("dut", barbershopStub)).start
+    val customer = actorOf(new Customer("dut", barbershop)).start
 
     doBefore {
       // A customer always sends a RequestBarber message when started
-      sign.expectMsg(timeout, RequestBarber)
+      line.expectMsg(timeout, RequestBarber)
     }
 
     doAfterSpec {
@@ -28,17 +28,11 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
       tracker.expectMsgClass(timeout, classOf[TrackLeaving])
     }
 
-    "Sends a CutMe message to the barber when receiving a GotoBarber message" in {
-      object barber extends Stub
-      customer ! TakeChair(1)
-      customer ! GotoBarber(barber.ref)
-      barber.expectMsg(timeout, CutMe)
+    "Sends a RequestBarber message to the barber when receiving a GotoBarber message" in {
+      customer ! GotoBarber(barber1.ref)
+      barber1.expectMsg(timeout, RequestBarber)
     }
 
-    "Query Chairs for a chair  if beeing told to Wait " in {
-      customer ! Wait
-      chairs.expectMsg(timeout, IsSeatAvailable)
-    }
 
     "Sit down and wait if receiving a TakeChair message" in {
       customer ! TakeChair(1)
@@ -50,15 +44,6 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
       expectNoMsg(timeout)
     }
 
-    "Try standing in line if being told that there are no seats available" in {
-      customer ! NoSeatsAvailable
-      line.expectMsg(timeout, GetInLine)
-    }
-
-    "Claim a chair when receiving a ClaimChair message" in {
-      customer ! ClaimChair
-      chairs.expectMsg(timeout, ClaimChair)
-    }
 
     "Leave if waiting live is full" in {
       customer ! LineFull

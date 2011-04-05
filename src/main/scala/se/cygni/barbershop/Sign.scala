@@ -3,35 +3,35 @@ package se.cygni.barbershop
 import akka.actor.{ActorRef, Actor}
 import collection.immutable.Queue
 
-class Sign extends Actor {
+class Sign extends Actor with PostStart {
 
   protected def receive = signReceive(Queue[ActorRef]())
 
   def signReceive(freeBarbers: Queue[ActorRef]): Receive = {
-    case StartSleeping => {
+
+    case Sleeping => {
       if (self.sender.isDefined) {}
-      val queue = freeBarbers enqueue self.sender.get
-      log.info("sleeping: %s", barberNames(queue))
-      become(signReceive(queue))
+      log.debug("sleeping: %s", barberNames(freeBarbers))
+      become(signReceive(freeBarbers enqueue self.sender.get))
     }
-    case RequestBarber => {
+    case rb@RequestBarber(customer) => {
       if (freeBarbers.isEmpty) {
-        log.info("%s is told to wait", self.sender.get.getId)
-        self.reply(Wait)
+        log.debug("%s is told to wait", customer.id)
+        self.reply(Wait(customer))
       } else {
         val (barber: ActorRef, tail) = freeBarbers.dequeue
-        log.info("%s to  %s (sleeping %s)", self.sender.get.getId, barber.getId, barberNames(tail))
-        barber forward CutMe
         become(signReceive(tail))
+        log.debug("sending %s to  %s (sleeping %s)", customer.id, barber.getId, barberNames(freeBarbers))
+        barber ! rb
       }
     }
   }
 
-  def barberNames(sleeping:Queue[ActorRef]):String ={
+  def barberNames(sleeping: Queue[ActorRef]): String = {
     if (sleeping.isEmpty) {
       "no barbers"
-    }  else {
-      sleeping map (_.getId) reduceLeft( _+", "+_)
+    } else {
+      sleeping map (_.getId) reduceLeft (_ + ", " + _)
     }
   }
 

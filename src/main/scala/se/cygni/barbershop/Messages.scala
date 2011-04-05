@@ -8,6 +8,32 @@ import akka.actor.ActorRef
 sealed trait TrackerMessages
 
 /**
+ * Messages to Customers
+ */
+sealed trait CustomerMessage
+
+/**
+ * Messages to the Line
+ */
+sealed trait LineMessage
+
+/**
+ * Messages to the Chairs
+ */
+
+sealed trait ChairsMessages
+
+/**
+ * Messages to the sign
+ */
+sealed trait SignMessages
+
+/**
+ * Messages to the barbers
+ */
+sealed trait BarberMessages
+
+/**
  * Barber is sleeping
  */
 case object TrackSleeping extends TrackerMessages
@@ -15,7 +41,7 @@ case object TrackSleeping extends TrackerMessages
 /**
  * Barber is cutting
  */
-case class TrackCutting(customer:ActorRef) extends TrackerMessages
+case class TrackCutting(customer: ActorRef) extends TrackerMessages
 
 /**
  * Barber completed cutting
@@ -25,22 +51,22 @@ case object TrackCutDone extends TrackerMessages
 /**
  * Customer is leaving
  */
-case class TrackLeaving(stats:Option[CustomerStats]) extends TrackerMessages
+case class TrackLeaving(stats: Option[CustomerStats]) extends TrackerMessages
 
 /**
  * Customer is sitting down
  */
-case class TrackSat(chair:Int)  extends TrackerMessages
+case class TrackSat(chair: Int) extends TrackerMessages
 
 /**
  * Customer left a chair
  */
-case class TrackLeftChair(chair:Int) extends TrackerMessages
+case class TrackLeftChair(chair: Int) extends TrackerMessages
 
 /**
  * Customer is getting in line
  */
-case object TrackEnteredLine  extends TrackerMessages
+case object TrackEnteredLine extends TrackerMessages
 
 /**
  * Customer left line
@@ -48,99 +74,71 @@ case object TrackEnteredLine  extends TrackerMessages
 case object TrackLeftLine extends TrackerMessages
 
 /**
+ * Closing the shop
+ */
+case object CloseShop extends TrackerMessages
+
+/**
  * Barber is sleeping
  * @param time, when started sleeping
  */
-case object StartSleeping
+case object Sleeping extends SignMessages
 
 /**
- * Request for a barber
+ * Request for a barber from a customer
  */
-case object RequestBarber
+case object RequestBarber extends LineMessage
 
 
 /**
- * A customer want to be cut
+ * Request for a barber, from  Line or Chair
+ * @param customer, the original requester
  */
-case object CutMe
+case class RequestBarber(customer: ActorRef) extends ChairsMessages with SignMessages with BarberMessages
 
 /**
  * There are no waiting customers
  */
-case object NoCustomersWaiting
-
-/**
- * Customer in waiting line claims a seat
- */
-case object ClaimChair
+case object NoCustomersWaiting extends BarberMessages
 
 /**
  * Barber wants the next waiting customer
  */
-case object NextCustomer
+case object NextCustomer extends LineMessage with ChairsMessages
 
 /**
- * Is there a free chair?
+ * Unable to serve, please wait
  */
-case object IsSeatAvailable
-
-/**
- * No barbers free please wait
- */
-case object Wait
+case class Wait(customer: ActorRef) extends LineMessage with ChairsMessages
 
 /**
  * Barber begins to cut
  */
-case object Cutting
+case object Cutting extends CustomerMessage
 
 /**
  * Hair cut is done
  */
-case object  CutDone
+case object CutDone extends CustomerMessage
 
 /**
  * Take a seat in the waiting room
  */
-case class TakeChair(chair:Int)
-
-/**
- * Leave a chair
- */
-case class LeftChair(chair:Int)
-
-/**
- * There is a free chair
- */
-case object FreeChair
-
-/**
- * There are no free chairs
- */
-case object NoSeatsAvailable
+case class TakeChair(chair: Int) extends CustomerMessage
 
 /**
  * Customer is allowed into the waiting line
  */
-case class  WaitInLine(pos:Int)
+case object WaitInLine extends CustomerMessage
 
 /**
  *   Waiting line is full
  */
-case object LineFull
-
-/**
- * Customer left the line
- */
-case object LeftLine
+case object LineFull extends CustomerMessage
 
 /**
  * Goto the specified barber
  */
-case class GotoBarber(barber:ActorRef)
+case class GotoBarber(barber: ActorRef) extends CustomerMessage
 
-/**
- * Customer tries to get in the line
- */
-case object GetInLine
 
