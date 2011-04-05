@@ -3,42 +3,43 @@ package se.cygni.barbershop
 import scala.math.random
 import akka.actor.{ActorRef, Actor}
 
-case class Barber(name: String, sign: ActorRef, chairs: ActorRef, tracker:ActorRef) extends Actor {
+case class Barber(name: String) extends Actor with PostStart {
 
-  self.id=name
+  self.id = name
 
-  override def preStart = {
-    log.info("%s came to work", name)
+  override def postStart() = {
+    log.debug("%s came to work", name)
     startSleeping
   }
 
   override def postStop = {
-    log.info("%s going home", name)
+    log.debug("%s going home", name)
   }
 
   private def startSleeping = {
-    log.info("%s going to sleep", name)
-    sign ! StartSleeping
+    log.debug("%s going to sleep", name)
+    sign ! Sleeping
     tracker ! TrackSleeping
   }
 
 
-   protected def receive = {
-      case CutMe => cut()
-      case NoCustomersWaiting => startSleeping
+  protected def receive = {
+
+    case RequestBarber(customer) => cut(customer)
+    case RequestBarber => cut(self.sender.get)
+    case NoCustomersWaiting => startSleeping
   }
 
-  def cut(): Unit = {
-    val customer = self.sender.get
-    log.info("%s is cutting %s", name, customer.getId)
+  def cut(customer: ActorRef): Any = {
+    log.debug("%s is cutting %s", name, customer.getId)
     customer ! Cutting
     tracker ! TrackCutting(customer)
     val time = cutTime
     Thread.sleep(time)
-    log.info("%s cut %s in %d ms", name, customer.getId, time)
-    self.reply(CutDone)
+    log.debug("%s cut %s in %d ms", name, customer.getId, time)
+    customer ! CutDone
     tracker ! TrackCutDone
-    log.info("%s calls for next customer", name)
+    log.debug("%s calls for next customer", name)
     chairs ! NextCustomer
   }
 
@@ -47,6 +48,7 @@ case class Barber(name: String, sign: ActorRef, chairs: ActorRef, tracker:ActorR
     val minCutTime = 300
     minCutTime + (random * (maxCutTime - minCutTime)).intValue
   }
+
 
 }
 
