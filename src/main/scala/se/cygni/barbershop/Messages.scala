@@ -18,7 +18,7 @@ sealed trait CustomerMessage
 sealed trait LineMessage
 
 /**
- * Messages to the Chairs
+ * Messages to the Lounge
  */
 
 sealed trait ChairsMessages
@@ -97,11 +97,6 @@ case object RequestBarber extends LineMessage
 case class RequestBarber(customer: ActorRef) extends ChairsMessages with SignMessages with BarberMessages
 
 /**
- * There are no waiting customers
- */
-case object NoCustomersWaiting extends BarberMessages
-
-/**
  * Barber wants the next waiting customer
  */
 case object NextCustomer extends LineMessage with ChairsMessages
@@ -135,10 +130,4 @@ case object WaitInLine extends CustomerMessage
  *   Waiting line is full
  */
 case object LineFull extends CustomerMessage
-
-/**
- * Goto the specified barber
- */
-case class GotoBarber(barber: ActorRef) extends CustomerMessage
-
 
