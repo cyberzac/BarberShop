@@ -24,7 +24,7 @@ class LineSpec extends Specification with TestKit with TestStubs {
 
     "Forward a RequestBaraber message if line is empty" in {
       line ! RequestBarber
-      chairs.expectMsg(timeout, RequestBarber(testActor))
+      lounge.expectMsg(timeout, RequestBarber(testActor))
     }
 
     "Reply with a WaitInLine message when there are room" in {
@@ -50,7 +50,7 @@ class LineSpec extends Specification with TestKit with TestStubs {
     "Reply with a RequestBaraber(customer) on a NextCustomer if line is non empty" in {
       line ! Wait(customer1.ref) // Becomes first in line
       line ! NextCustomer
-      chairs.expectMsg(timeout, RequestBarber(customer1.ref))
+      lounge.expectMsg(timeout, RequestBarber(customer1.ref))
     }
   }
 }

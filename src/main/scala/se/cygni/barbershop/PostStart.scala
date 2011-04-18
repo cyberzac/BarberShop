@@ -10,7 +10,7 @@ trait PostStart {
 
   var line: ActorRef = null
   var sign: ActorRef = null
-  var chairs: ActorRef = null
+  var lounge: ActorRef = null
   var tracker: ActorRef = null
 
 
@@ -26,7 +26,7 @@ trait PostStart {
       case barbershop: Barbershop => try { {
         line = barbershop.line
         sign = barbershop.sign
-        chairs = barbershop.chairs
+        lounge = barbershop.lounge
         tracker = barbershop.tracker
         postStart
       }

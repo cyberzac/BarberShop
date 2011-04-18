@@ -7,19 +7,21 @@ case class Customer(id: String, barbershop: Barbershop) extends Actor {
   self.id = id
 
   override def preStart = {
-    log.info("%s entered shop", id)
+    log.debug("%s entered shop", id)
     barbershop.line ! RequestBarber
   }
 
   protected def receive = customerReceive(CustomerStats())
 
   def customerReceive(stats: CustomerStats): Receive = {
+
     case Cutting =>
+      log.debug("%s is being cut by %s", id, self.sender.get.id)
       become(customerReceive(stats.cut))
 
     case CutDone => {
       log.debug("%s leaving, %s", id, stats.done)
-      barbershop.tracker ! TrackLeaving(Some(stats))
+      barbershop.tracker ! TrackLeaving(Some(stats.done))
     }
 
     case WaitInLine => {
@@ -38,10 +40,6 @@ case class Customer(id: String, barbershop: Barbershop) extends Actor {
       become(customerReceive(stats.sit(chair)))
     }
 
-    case GotoBarber(barber) => {
-      log.debug("%s going to barber %s ", id, barber.id)
-      barber ! RequestBarber
-    }
   }
 }
 

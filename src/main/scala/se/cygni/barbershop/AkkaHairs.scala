@@ -3,25 +3,29 @@ package se.cygni.barbershop
 import akka.actor.Actor._
 import scala.math.random
 
+
 object AkkaHairs {
 
+  val numberOfCustomers = 200
+     val numberOfChairs = 10
+     val maxLine = 10
+     val maxCutTime = 150
+     val minCutTime = 10
+     val barberNames = List("Edward", "Jean-Paul", "Gulletussan")
+
   def main(args: Array[String]) {
-    val numberOfCustomers = 50
-    val numberOfChairs = 4
-    val maxLine = 4
-    val barberNames = List("Edward", "Jean-Paul", "Gulletussan")
 
     val sign = actorOf[Sign]
     val tracker = actorOf(new Tracker(numberOfCustomers, numberOfChairs, maxLine))
-    val chairs = actorOf(new Chairs(numberOfChairs))
+    val lounge = actorOf(new Lounge(numberOfChairs))
     val line = actorOf(new Line(maxLine))
-    val barbers = barberNames map {name => actorOf(new Barber(name))}
-    val shop = Barbershop(sign = sign, chairs = chairs, line = line, tracker = tracker, barbers = barbers)
+    val barbers = barberNames map {name => actorOf(new Barber(name, cutTime _))}
+    val shop = Barbershop(sign = sign, lounge = lounge, line = line, tracker = tracker, barbers = barbers)
     shop start
 
     1.to(numberOfCustomers) foreach {
       id =>
-        val wait: Long = poisson(50)
+        val wait: Long = poisson((maxCutTime-minCutTime)/(3*2))
         log.debug("Waiting %d", wait)
         Thread.sleep(wait)
         actorOf(new Customer(id.toString, shop)).start
@@ -47,6 +51,10 @@ object AkkaHairs {
       p *= random
     }
     k - 1
+  }
+
+  def cutTime: Long = {
+    minCutTime + (random * (maxCutTime - minCutTime)).intValue
   }
 
 }

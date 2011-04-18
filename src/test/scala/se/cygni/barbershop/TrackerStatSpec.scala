@@ -21,14 +21,14 @@ class TrackerStatSpec extends Specification with TestKit {
 
     "increment the seenCustomers and rejected  when customerLeft(None) is called" in {
       val newState = state.customerLeft(None)
-      newState.seen must_== 1
-      newState.rejected must_== 1
+      newState.stats.total must_== 1
+      newState.stats.rejected must_== 1
     }
 
-    "increment only seenCustomers and rejected  when customerLeft(Some) is called" in {
+    "increment only totalCustomers and rejected  when customerLeft(Some) is called" in {
       val newState = state.customerLeft(Some(CustomerStats()))
-      newState.seen must_== 1
-      newState.rejected must_== 0
+      newState.stats.total must_== 1
+      newState.stats.rejected must_== 0
     }
 
     "set a chair a occupied with sitting" in {

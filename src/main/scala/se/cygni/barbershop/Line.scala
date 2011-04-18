@@ -11,7 +11,8 @@ case class Line(maxLine: Int) extends Actor with PostStart {
     case RequestBarber => {
       val customer = self.sender.get
       if (queue.isEmpty) {
-        chairs ! RequestBarber(customer)
+        log.debug("No one in the line try the lounge %s", customer.id)
+        lounge ! RequestBarber(customer)
       } else {
         queueCustomer(customer, queue)
       }
@@ -24,20 +25,21 @@ case class Line(maxLine: Int) extends Actor with PostStart {
     } else {
       val (customer, tail) = queue.dequeue
       become(lineReceive(tail))
-      chairs ! RequestBarber(customer)
+      log.debug("told %s to go to the lounge", customer.getId)
+      lounge ! RequestBarber(customer)
       tracker ! TrackLeftLine
-      log.debug("told %s to sit down", customer.getId)
     }
   }
 
   def queueCustomer(customer: ActorRef, queue: Queue[ActorRef]): Unit = {
     if (queue.size < maxLine) {
+      val newQueue = queue enqueue customer
+      log.debug("%s wait in line (%d)".format(customer.id, newQueue.size))
       customer ! WaitInLine
-      become(lineReceive(queue enqueue customer))
-      log.debug("%s wait in line (%d)".format(customer.id, queue.size))
+      become(lineReceive(newQueue))
     } else {
-      customer ! LineFull
       log.debug("%s sorry waitingline is full (%d)".format(customer.id, queue.size))
+      customer ! LineFull
     }
   }
 

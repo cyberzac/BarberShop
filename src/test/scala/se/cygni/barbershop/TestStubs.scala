@@ -18,7 +18,7 @@ trait TestStubs {
   }
 
   val sign = new Stub("sign")
-  val chairs = new Stub("chairs")
+  val lounge = new Stub("chairs")
   val tracker = new Stub("tracker")
   val line = new Stub("line")
   val customer1 = new Stub("customer1")
@@ -28,5 +28,5 @@ trait TestStubs {
   val barber2 = new Stub("barber2")
   val barber3 = new Stub("barber3")
   val barbers = List(barber1.ref, barber2.ref, barber3.ref)
-  val barbershop = Barbershop(sign = sign.ref, chairs = chairs.ref, tracker = tracker.ref, line = line.ref, barbers = barbers)
+  val barbershop = Barbershop(sign = sign.ref, lounge = lounge.ref, tracker = tracker.ref, line = line.ref, barbers = barbers)
 }

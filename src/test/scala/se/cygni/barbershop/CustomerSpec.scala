@@ -28,12 +28,6 @@ class CustomerSpec extends Specification with TestKit with TestStubs {
       tracker.expectMsgClass(timeout, classOf[TrackLeaving])
     }
 
-    "Sends a RequestBarber message to the barber when receiving a GotoBarber message" in {
-      customer ! GotoBarber(barber1.ref)
-      barber1.expectMsg(timeout, RequestBarber)
-    }
-
-
     "Sit down and wait if receiving a TakeChair message" in {
       customer ! TakeChair(1)
       expectNoMsg(timeout)
